@@ -5,7 +5,27 @@ import { User } from "../models/user.model.js"
 import { uploadOncloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+//generate accessToken & refreshToken
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
 
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    //set refreshToken in user property
+    user.refereshToken = refreshToken;
+    //save user into db
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong while generating refresh and access Token")
+  }
+}
+
+
+
+//register User
 const registerUser = asyncHandler(async (req, res) => {
 
   //get user details from frontend based on model
@@ -16,6 +36,9 @@ const registerUser = asyncHandler(async (req, res) => {
     || !confirmPassword.trim()) {
     throw new ApiError(400, "All Fields are required");
   }
+
+
+
 
   const emailRegex = EMAIL_REGEX;
   if (!emailRegex.test(email)) {
@@ -50,11 +73,10 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     profilePicture: uploadResult.secure_url || "",
     password,
-    confirmPassword
   })
   //remove password and refreshtoken field from resposne
   const createdUser = await User.findById(user._id).select(
-    "-password -refereshToken -confirmPassword"
+    "-password -refereshToken"
   )
   //check for user creation
 
@@ -68,4 +90,86 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser };
+//login User
+const loginUser = asyncHandler(async (req, res) => {
+  //get user details from frontend based on model
+  const { email, password } = req.body;
+  console.log("email :", email);
+  console.log("password : ", password);
+  //validation 
+  if (!email.trim() || !password.trim()) {
+    throw new ApiError(400, "All Fields are required");
+  }
+
+  const emailRegex = EMAIL_REGEX;
+  if (!emailRegex.test(email)) {
+    throw new ApiError(400, "Invalid email format.");
+  }
+
+  if (password.length < 6) {
+    throw new ApiError(400, "Password is invalid or it must take atleast 6 characters");
+  }
+
+  //check if user already exist or not
+  const existedUser = await User.findOne({ email })
+  if (!existedUser) {
+    throw new ApiError(404, "User does not exist! Please Registered first")
+  }
+  //check password is correct or not !
+  const isPasswordValid = await existedUser.isPasswordCorrect(password)
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid user credentials !!");
+  }
+
+  //create AccessToken and refresh token
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(existedUser._id)
+
+  //send accesstoken in cookiees.
+  const loggedInUser = await User.findById(existedUser._id).select("-password -refereshToken")
+
+  const options = {
+    httpOnly: true,
+    secure: true
+  }
+
+  return res.status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refereshToken", refreshToken, options)
+    .json(
+      new ApiResponse(200, {
+        user: loggedInUser,
+        accessToken,
+        refereshToken: refreshToken
+      }, "User Logged In Successfully !!")
+    );
+
+});
+
+//logOut User
+const logoutUser = asyncHandler(async (req, res) => {
+  //clear cookies and reset refreshetoken
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refereshToken: undefined
+      }
+    },
+    {
+      new: true
+    }
+  )
+
+  const options = {
+    httpOnly: true,
+    secure: true
+  }
+  return res.status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refereshToken", options)
+    .json(new ApiResponse(200, {}, "User Logged Out"))
+})
+
+
+
+export { registerUser, loginUser, logoutUser };

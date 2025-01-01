@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     },
     confirmPassword: {
       type: String,
-      required: [true, "confirm password is required"]
+
     },
     refereshToken: {
       type: String
