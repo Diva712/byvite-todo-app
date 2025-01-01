@@ -254,7 +254,7 @@ const currentUser = asyncHandler(async (req, res) => {
 
 //updateUser Profile Picture
 const updateUserProfile = asyncHandler(async (req, res) => {
-  //to-do
+  //TODO
 
 })
 
