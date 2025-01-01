@@ -16,7 +16,9 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
     profilePicture: {
-      type: String // cloudinary url
+      type: String,
+      required: true
+      // cloudinary url
     },
     password: {
       type: String,

@@ -5,7 +5,7 @@ const storage = multer.diskStorage({
     cb(null, "./public/temp")
   },
   filename: function (req, file, cb) {
-    console.log("My ufile which is to be uploaded", file);
+    console.log("My profile which is to be uploaded", file);
     cb(null, file.originalname)
   }
 })
