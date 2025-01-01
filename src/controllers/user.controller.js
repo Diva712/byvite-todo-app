@@ -39,9 +39,6 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All Fields are required");
   }
 
-
-
-
   const emailRegex = EMAIL_REGEX;
   if (!emailRegex.test(email)) {
     throw new ApiError(400, "Invalid email format.");
@@ -64,7 +61,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Profile picture is required.");
   }
   //upload profilePicture into cloudinary
-  console.log("File path : ", req.file.path);
+
   const uploadResult = await uploadOncloudinary(req.file.path);
   if (!uploadResult) {
     throw new ApiError(500, "Failed to upload profile picture.");
@@ -96,8 +93,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   //get user details from frontend based on model
   const { email, password } = req.body;
-  console.log("email :", email);
-  console.log("password : ", password);
+
   //validation 
   if (!email.trim() || !password.trim()) {
     throw new ApiError(400, "All Fields are required");
@@ -203,18 +199,18 @@ const refreshAceesToken = asyncHandler(async (req, res) => {
       secure: true
     }
     //get new accessToken and refreshToken
-    const { newAccessToken, newRrefeshToken } = await generateAccessAndRefreshTokens(user._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
     return res
       .status(200)
-      .cookie("accessToken", newAccessToken, options)
-      .cookie("refereshToken", newRefeshToken, options)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refereshToken", refreshToken, options)
       .json(
         new ApiResponse(
           200,
           {
-            accessToken: newAccessToken,
-            refereshToken: newRrefeshToken
+            accessToken: accessToken,
+            refereshToken: refreshToken
 
           },
           "AccessToken refreshed successfully !!"
@@ -225,38 +221,13 @@ const refreshAceesToken = asyncHandler(async (req, res) => {
   }
 })
 
-
-//change password
-const changeCurrentPassword = asyncHandler(async (req, res) => {
-  const { oldPassword, newPassword } = req.body
-
-  const user = await User.findById(req.user?.id)
-  const isCorrect = await user.isPasswordCorrect(oldPassword)
-
-  if (!isCorrect) {
-    throw new ApiError(400, "Invalid User Old Password")
-  }
-
-  //change password
-  user.password = newPassword
-
-  await user.save({ validateBeforeSave: false });
-
-  return res.status(200).json(new ApiResponse(200, {}, "Password Changed Successfully !!"))
-
-})
-
-
 //currentUSer
 const currentUser = asyncHandler(async (req, res) => {
-  return res.status(200).json(200, req.user, "Current user fetched !!")
+  return res.status(200).json(
+    new ApiResponse(200, req.user, "Current User fetched !!")
+  )
 })
 
-//updateUser Profile Picture
-const updateUserProfile = asyncHandler(async (req, res) => {
-  //TODO
-
-})
 
 
 
@@ -264,6 +235,5 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 export {
   registerUser, loginUser,
   logoutUser, refreshAceesToken,
-  changeCurrentPassword,
-  currentUser, updateUserProfile
+  currentUser
 };
