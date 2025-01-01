@@ -22,24 +22,5 @@ router.route("/:id")
 
 
 
-
-
-
-
-
-
-//get task by id
-// router.route("/tasks/:id")
-//   .get(verifyJWT, getTaskById)
-//   .put(verifyJWT, updateTaskStatus)
-//   .delete(verifyJWT, deleteTask);
-
-//create and get task end-point
-// router.route("/tasks")
-//   .post(verifyJWT, createTask)
-//   .get(verifyJWT, getAllTask);
-
-
-
 export default router;
 
