@@ -2,7 +2,7 @@ import { Task } from "../models/task.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
+import mongoose from "mongoose";
 
 
 //create Task controller
@@ -11,7 +11,8 @@ const createTask = asyncHandler(async (req, res) => {
 
   //validation
   if (!title || !description) {
-    throw new ApiError(400, "Title Or Decription can not be empty !!");
+    throw new ApiError(400,
+      "Title Or Decription can not be empty !!");
   }
 
   const task = new Task({
@@ -23,7 +24,8 @@ const createTask = asyncHandler(async (req, res) => {
   const createdTask = await task.save();
 
   if (!createTask) {
-    throw new ApiError(404, "Error during the created Task in Db");
+    throw new ApiError(404,
+      "Error during the created Task in Db");
   }
 
   return res.status(201).json(
@@ -37,11 +39,13 @@ const getAllTask = asyncHandler(async (req, res) => {
 
   const myTasks = await Task.find({ user: req.user._id });
   if (!myTasks) {
-    throw new ApiError(404, "There is no tasks added by user !!")
+    throw new ApiError(404,
+      "There is no tasks added by user !!")
   }
 
   return res.status(200).json(
-    new ApiResponse(200, myTasks, "All tasks are fetched !!")
+    new ApiResponse(200, myTasks,
+      "All tasks are fetched !!")
   );
 })
 
@@ -51,11 +55,11 @@ const getTaskById = async (req, res) => {
 
   const task = await Task.findOne({
     _id: req.params.id,
-    user: req.user_id
-  })
+    user: req.user._id
+  });
 
   if (!task) {
-    throw new ApiError(404, "Task not found !");
+    throw new ApiError(404, "Task not found !!")
   }
 
   return res.status(200).json(
@@ -82,11 +86,13 @@ const updateTaskStatus = asyncHandler(async (req, res) => {
   );
 
   if (!updatedTask) {
-    throw new ApiError(404, "Task not found !!")
+    throw new ApiError(404,
+      "Task not found !!")
   }
 
   return res.status(200).json(
-    new ApiResponse(200, updatedTask, "Task update successfully !!")
+    new ApiResponse(200, updatedTask,
+      "Task update successfully !!")
   )
 })
 
@@ -102,7 +108,7 @@ const deleteTask = asyncHandler(async (req, res) => {
   if (!task) {
     throw new ApiError(404, "Task not found !!")
   }
-  return res.status(204).json(
+  return res.status(200).json(
     new ApiResponse(204, {}, "Task deleted successfully !")
   )
 })
