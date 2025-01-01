@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt"
+
 
 const userSchema = new mongoose.Schema(
   {
@@ -13,7 +16,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
     profilePicture: {
-      type: String
+      type: String // cloudinary url
     },
     password: {
       type: String,
@@ -27,13 +30,28 @@ const userSchema = new mongoose.Schema(
     refereshToken: {
       type: String
     }
-
   },
   {
     timestamps: true
   }
 )
 
+//Pre Hooks implementation for password encryption
+userSchema.pre("save", async function (next) {
+  //if password field is not modified
+  if (!this.isModified("password")) {
+    return next();
+  }
+  //if password field is modified
+  this.password = await bcrypt.hash(this.password, 10)
+  next()
+})
 
+// Password Check is it correct or not
+userSchema.methods.isPasswordCorrect = async function
+  (password) {
+  return await bcrypt.compare(password, this.password);
+
+}
 
 export const User = mongoose.model("User", userSchema)
