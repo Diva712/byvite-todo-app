@@ -284,9 +284,9 @@ A REST API service for managing a simple to-do list application, built with Node
    - `ACCESS_TOKEN_EXPIRE` (Access token expiry, e.g., `1d`)
    - `REFRESH_TOKEN_EXPIRE` (Refresh token expiry, e.g., `5d`)
    - `REFRESH_TOKEN_SECRET` (Secret key for JWT)
-   - `CLOUDINARY_CLOUD_NAME` (Secret key for JWT)
-   - `CLOUDINARY_API_KEY` (Access token expiry, e.g., `15m`)
-   - `REFRESH_API_SECRET` (Refresh token expiry, e.g., `7d`)
+   - `CLOUDINARY_CLOUD_NAME` 
+   - `CLOUDINARY_API_KEY` 
+   - `CLOUDINARY_API_SECRET` 
 5. Start the server: `npm run dev`
 6. Use tools like Postman to interact with the API.
 
